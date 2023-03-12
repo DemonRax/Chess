@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -10,8 +8,14 @@ public class Piece : MonoBehaviour
     [SerializeField]
     Sprite[] sprites;
 
+    bool isStatic = true;
+    Vector3 staticPosition;
+    Chess chess;
+
     void Start()
     {
+        chess = FindObjectOfType<Chess>();
+
         int sprite = 0;
 
         if (color == Chess.Color.White)
@@ -22,7 +26,7 @@ public class Piece : MonoBehaviour
             if (type == Chess.Type.Rook) sprite = 4;
             if (type == Chess.Type.Pawn) sprite = 5;
         }
-        else 
+        else
         {
             if (type == Chess.Type.King) sprite = 6;
             if (type == Chess.Type.Queen) sprite = 7;
@@ -38,6 +42,42 @@ public class Piece : MonoBehaviour
 
     void Update()
     {
-        
+        if (chess.turn != color) return;
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if (hit.collider == null || hit.collider.gameObject != gameObject) return;
+
+            staticPosition = gameObject.transform.position;
+            isStatic = false;
+        }
+        if (!isStatic && Input.GetMouseButtonUp(0))
+        {
+            isStatic = true;
+
+            if (chess.CheckMove(Mathf.RoundToInt(staticPosition.x), Mathf.RoundToInt(staticPosition.y), Mathf.RoundToInt(gameObject.transform.position.x), Mathf.RoundToInt(gameObject.transform.position.y)))
+            {
+                gameObject.transform.position = new Vector3(Mathf.RoundToInt(gameObject.transform.position.x), Mathf.RoundToInt(gameObject.transform.position.y), staticPosition.z);
+            }
+            else
+            {
+                gameObject.transform.position = staticPosition;
+            }
+        }
+        if (!isStatic && Input.GetMouseButton(0))
+        {
+            gameObject.transform.position = new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, -0.1f);
+        }
+    }
+
+    public int X()
+    {
+        return Mathf.RoundToInt(gameObject.transform.position.x);
+    }
+
+    public int Y()
+    {
+        return Mathf.RoundToInt(gameObject.transform.position.y);
     }
 }
