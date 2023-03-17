@@ -5,6 +5,8 @@ public class Piece : MonoBehaviour
     public Chess.Color color;
     public Chess.Type type;
 
+    public bool hasMoved = false;
+
     [SerializeField]
     Sprite[] sprites;
 
@@ -59,6 +61,7 @@ public class Piece : MonoBehaviour
             if (chess.CheckMove(Mathf.RoundToInt(staticPosition.x), Mathf.RoundToInt(staticPosition.y), Mathf.RoundToInt(gameObject.transform.position.x), Mathf.RoundToInt(gameObject.transform.position.y)))
             {
                 gameObject.transform.position = new Vector3(Mathf.RoundToInt(gameObject.transform.position.x), Mathf.RoundToInt(gameObject.transform.position.y), staticPosition.z);
+                hasMoved = true;
             }
             else
             {

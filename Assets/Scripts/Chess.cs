@@ -82,7 +82,8 @@ public class Chess : MonoBehaviour
         switch (pieces[oX][oY].type)
         {
             case Type.King:
-                return IsOneAway(oX, oY, nX, nY);
+                if (IsOneAway(oX, oY, nX, nY)) return true;
+                return false;
             case Type.Rook:
                 return IsStraight(oX, oY, nX, nY);
             case Type.Bishop:
@@ -93,7 +94,7 @@ public class Chess : MonoBehaviour
                 return IsKnight(oX, oY, nX, nY);
             case Type.Pawn:
                 return IsPawn(oX, oY, nX, nY, pieces[oX][oY].color, pieces[nX][nY]);
-            default: return true;
+            default: return false;
         }
     }
 
