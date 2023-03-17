@@ -17,7 +17,11 @@ public class Piece : MonoBehaviour
     void Start()
     {
         chess = FindObjectOfType<Chess>();
+        Reset();
+    }
 
+    void Reset()
+    {
         int sprite = 0;
 
         if (color == Chess.Color.White)
@@ -42,9 +46,15 @@ public class Piece : MonoBehaviour
         gameObject.name = color.ToString() + type.ToString();
     }
 
+    public void SetType(Chess.Type newType)
+    {
+        type = newType;
+        Reset();
+    }
+
     void Update()
     {
-        if (chess.turn != color) return;
+        if (!chess.isRunning || chess.turn != color) return;
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -62,6 +72,7 @@ public class Piece : MonoBehaviour
             {
                 gameObject.transform.position = new Vector3(Mathf.RoundToInt(gameObject.transform.position.x), Mathf.RoundToInt(gameObject.transform.position.y), staticPosition.z);
                 hasMoved = true;
+                chess.PromotePawn(X(), Y());
             }
             else
             {

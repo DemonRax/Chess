@@ -7,7 +7,11 @@ public class Chess : MonoBehaviour
     public enum Type { King, Queen, Bishop, Knight, Rook, Pawn }
 
     public Color turn = Color.White;
-    public GameObject parentOfPieces, piece;
+    public GameObject parentOfPieces, piece, promotePawn, turnText;
+
+    public bool isRunning = true;
+
+    int xPromote, yPromote;
 
     List<List<Piece>> pieces = new List<List<Piece>>(9);
 
@@ -39,7 +43,6 @@ public class Chess : MonoBehaviour
 
     void Update()
     {
-
     }
 
     void SpawnPiece(int x, int y, Color color, Type type)
@@ -75,6 +78,26 @@ public class Chess : MonoBehaviour
         pieces[oX][oY] = null;
         turn = (turn == Color.White) ? Color.Black : Color.White;
         return true;
+    }
+
+    public void PromotePawn(int x, int y)
+    {
+        if (y != 1 && y != pieces.Capacity - 1) return;
+        Piece p = pieces[x][y];
+        if (p.type != Type.Pawn) return;
+
+        isRunning = false;
+        xPromote = x; yPromote = y;
+        promotePawn.SetActive(true);
+        turnText.SetActive(false);
+    }
+
+    public void ReplacePawn(string type)
+    {
+        pieces[xPromote][yPromote].SetType((Type)System.Enum.Parse(typeof(Type), type));
+        isRunning = true;
+        promotePawn.SetActive(false);
+        turnText.SetActive(true);
     }
 
     bool CheckPieceMove(int oX, int oY, int nX, int nY)
