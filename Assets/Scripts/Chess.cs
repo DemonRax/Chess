@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Chess : MonoBehaviour
 {
@@ -7,7 +9,7 @@ public class Chess : MonoBehaviour
     public enum Type { King, Queen, Bishop, Knight, Rook, Pawn }
 
     public Color turn = Color.White;
-    public GameObject parentOfPieces, piece, promotePawn, turnText;
+    public GameObject parentOfPieces, piece, promotePawn, turnText, winnerWinnerChickenDinner, pressR;
 
     public bool isRunning = true;
 
@@ -43,6 +45,8 @@ public class Chess : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
+        if (Input.GetKeyDown(KeyCode.R)) SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void SpawnPiece(int x, int y, Color color, Type type)
@@ -58,8 +62,8 @@ public class Chess : MonoBehaviour
     public bool CheckMove(int oX, int oY, int nX, int nY)
     {
         // Check outside borders
-        if (nX < 1 || nX > pieces.Capacity - 1) return false;
-        if (nY < 1 || nY > pieces.Capacity - 1) return false;
+        if (nX < 1 || nX >= pieces.Capacity) return false;
+        if (nY < 1 || nY >= pieces.Capacity) return false;
 
         Piece oP = pieces[oX][oY];
         if (oP == null) return false;
@@ -72,8 +76,18 @@ public class Chess : MonoBehaviour
         // Can move
         if (!CheckPieceMove(oX, oY, nX, nY)) return false;
 
-        // Appove move, change color
-        if (nP != null) DestroyImmediate(nP.gameObject);
+        // Appove move, change color, EAT
+        if (nP != null)
+        {
+            if (nP.type == Type.King)
+            {
+                isRunning = false;
+                winnerWinnerChickenDinner.GetComponent<TMP_Text>().text = ("Winner Winner Chicken Dinner for " + turn.ToString());
+                winnerWinnerChickenDinner.SetActive(true);
+                pressR.SetActive(true);
+            }
+            DestroyImmediate(nP.gameObject);
+        }
         pieces[nX][nY] = oP;
         pieces[oX][oY] = null;
         turn = (turn == Color.White) ? Color.Black : Color.White;
@@ -98,6 +112,35 @@ public class Chess : MonoBehaviour
         isRunning = true;
         promotePawn.SetActive(false);
         turnText.SetActive(true);
+    }
+
+    bool Check(Color c)
+    {
+        int xKing = 0, yKing = 0;
+        for (int x = 1; x < pieces.Capacity; x++)
+        {
+            for (int y = 1; y < pieces.Capacity; y++)
+            {
+                Piece piece = pieces[x][y];
+                if (piece == null) continue;
+                if (piece.type == Type.King && piece.color == c)
+                {
+                    xKing = x; yKing = y;
+                    break;
+                }
+            }
+            if (xKing > 0 && yKing > 0) break;
+        }
+        for (int x = 1; x < pieces.Capacity; x++)
+        {
+            for (int y = 1; y < pieces.Capacity; y++)
+            {
+                Piece piece = pieces[x][y];
+                if (piece == null || piece.color == c) continue;
+                if (CheckPieceMove(x, y, xKing, yKing)) return true;
+            }
+        }
+        return false;
     }
 
     bool CheckPieceMove(int oX, int oY, int nX, int nY)
