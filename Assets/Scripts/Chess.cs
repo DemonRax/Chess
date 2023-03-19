@@ -131,13 +131,18 @@ public class Chess : MonoBehaviour
             }
             if (xKing > 0 && yKing > 0) break;
         }
+        return CheckPosition(xKing, yKing, c);
+    }
+
+    bool CheckPosition(int xCheck, int yCheck, Color c)
+    {
         for (int x = 1; x < pieces.Capacity; x++)
         {
             for (int y = 1; y < pieces.Capacity; y++)
             {
                 Piece piece = pieces[x][y];
                 if (piece == null || piece.color == c) continue;
-                if (CheckPieceMove(x, y, xKing, yKing)) return true;
+                if (CheckPieceMove(x, y, xCheck, yCheck)) return true;
             }
         }
         return false;
@@ -149,7 +154,7 @@ public class Chess : MonoBehaviour
         {
             case Type.King:
                 if (IsOneAway(oX, oY, nX, nY)) return true;
-                return false;
+                return Castling(oX, oY, nX, nY);
             case Type.Rook:
                 return IsStraight(oX, oY, nX, nY);
             case Type.Bishop:
@@ -162,6 +167,34 @@ public class Chess : MonoBehaviour
                 return IsPawn(oX, oY, nX, nY, pieces[oX][oY].color, pieces[nX][nY]);
             default: return false;
         }
+    }
+
+    bool Castling(int oX, int oY, int nX, int nY)
+    {
+        if (oY != nY) return false;
+        if (pieces[oX][oY].hasMoved) return false;
+        if (nX != 3 && nX != 7) return false;
+
+        bool cLong = (nX == 3);
+        Color color = pieces[oX][oY].color;
+        Piece rook = pieces[cLong ? 1 : 8][oY];
+
+        if (rook == null || rook.hasMoved) return false;
+
+        for (int x = cLong ? 4 : 6; cLong ? x > 1 : x < 8; x += cLong ? -1 : 1)
+        {
+            if (pieces[x][oY] != null) return false;
+        }
+        for (int x = oX; cLong ? x >= nX : x <= nX; x += cLong ? -1 : 1)
+        {
+            if (CheckPosition(x, oY, color)) return false;
+        }
+
+        pieces[rook.X()][oY] = null;
+        rook.gameObject.transform.position = new Vector3(oX + (cLong ? -1 : 1), oY, rook.gameObject.transform.position.z);
+        pieces[rook.X()][oY] = rook;
+
+        return true;
     }
 
     bool IsOneAway(int oX, int oY, int nX, int nY)
